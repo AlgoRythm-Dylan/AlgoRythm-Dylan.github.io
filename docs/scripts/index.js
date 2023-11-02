@@ -12,7 +12,7 @@ addEventListener("load", async () => {
     let load = performance.now();
     app.settings = AppSettings.load();
     if(app.currentProfile.theme == "auto"){
-        UI.setupAutoTheme();
+        UI.startAutoTheme();
     }
     else {
         UI.setTheme(app.currentProfile.theme);
