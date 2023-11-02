@@ -42,7 +42,7 @@ addEventListener("load", async () => {
 function acceptDisclaimer(){
     window.app.settings.disclaimerAccepted = true;
     AppSettings.save(window.app.settings);
-    let disclaimerPopup = document.getElementById("discalimer-popup");
+    let disclaimerPopup = document.getElementById("disclaimer-popup");
     disclaimerPopup.className += " fly-away-gone";
     disclaimerPopup.addEventListener("animationend", e => {
         disclaimerPopup.style.display = "none";
