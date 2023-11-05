@@ -77,6 +77,8 @@ function startup(){
     app.run();
     listenToNavLinks(app.navigation);
 
+    document.getElementById("app-profile-display-link").innerHTML = app.currentProfile.name ?? "Unnamed Profile";
+
     hookupEvents();
 }
 

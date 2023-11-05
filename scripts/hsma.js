@@ -136,12 +136,13 @@ export class Profile {
         this.id = null;
         this.name = null;
         this.bazaarConfig = null;
-        this.theme = "auto";
+        this.theme = null;
     }
     static default(){
         let profile = new Profile();
         profile.id = crypto.randomUUID();
         profile.name = "Default";
+        profile.theme = "light";
         profile.bazaarConfig = new BazaarConfiguration();
         return profile;
     }
