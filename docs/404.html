@@ -2,12 +2,16 @@
 <html>
     <head>
         <title>Hypixel Skyblock Market Analyzer</title>
+        <meta http-equiv="cache-control" content="no-cache">
+        <meta http-equiv="expires" content="0">
+        <meta http-equiv="pragma" content="no-cache">
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:opsz@6..12&family=DM+Sans:opsz@9..40&display=swap" rel="stylesheet">
         <link href="/fontawesome/css/fontawesome.css" rel="stylesheet">
         <link href="/fontawesome/css/all.css" rel="stylesheet">
         <link rel="stylesheet" href="/styles/site.css">
+        <link rel="manifest" href="/res/manifest.json">
         <link href="/styles/index.css" rel="stylesheet" type="text/css">
     </head>
     <body>
@@ -20,6 +24,9 @@
             <i class="fa-solid fa-arrow-right"></i>
         </div>
         <p id="app-page-name" class="no-select"></p>
+        <p id="app-profile-display">
+            Profile: <span id="app-profile-display-link" class="text-accent"></span>
+        </p>
     </div>
     <div id="app-body">
         <div id="app-navigation">
@@ -154,121 +161,18 @@
             need to do in order to have this tool give you a list of the best
             flips is to input your budget.
         </p>
-        <!--
-        <h2>Buy and Sell Orders</h3>
+        <h2>Walkthrough (WIP)</h2>
         <p>
-            The average Skyblock player, and even the seasoned player in a rush,
-            will typically opt for the "insta-sell" or "insta-buy" options from
-            the bazaar. Being able to get the items or coins you need instantly
-            is very convenient, but it comes at a cost - you're not getting the best
-            deal.
+            Head over to the <a href="/bazaar/flip-explorer/" nav-link="true">explorer</a>
+            and pick out something reasonable from the top few rows. Take into
+            consideration how many of the item you'll need to buy in
+            order to complete the flip.
         </p>
         <p>
-            The bazaar itself runs off a system of buy orders and sell orders.
-            To simplify, let's only consider sell orders for now. Let's say that
-            a player has finished harvesting all their wheat and would like to
-            sell their produce for coins. In real life, they would put their items
-            up for sale in a market and wait for various customers to purchase
-            their goods until everything is sold.
+            Next, go to the bazaar and search for that item. If you
+            don't know where it is, you might want to just use the
+            "search" feature by clicking the sign.
         </p>
-        <p>
-            The bazaar works much the same way. The farmer will go to the bazaar
-            and create a <em>sell order</em>. All the wheat which the farmer
-            harvested will instantly be taken from their inventory, but no coins
-            will be awarded to them yet. The items were placed on the market, but
-            nobody has come around and purchased them yet.
-        </p>
-        <p>
-            Next, another player has the goal of upgrading their wheat minion.
-            However, this player is in more of a rush and opts for the instant
-            options instead. A few minutes after the farmer puts their wheat on
-            the market, this player insta-buys enough wheat to upgrade
-            their minion. Finally, at this point, the farmer's wheat is sold and
-            they can now collect their coins by visiting the bazaar again.
-        </p>
-        <p>
-            The important take-away from this is that an <em>instant buy</em>
-            gets its material from the long list of <em>sell orders</em>.
-        </p>
-        <p>
-            What about the other way around? What if the farmer needs to sell
-            their wheat quickly, but the player upgrading their minion is
-            patient enough to wait for better prices?
-        </p>
-        <p>
-            In this case, the player upgrading their minion goes to the
-            bazaar and creates a <em>buy order</em>. They tell the bazaar
-            how much wheat they need and how much they are willing to pay
-            (how much you're willing to pay is usually determined by the
-            other offers already on the market) and then instantly, their
-            coins are taken from them but they are awarded no wheat yet.
-        </p>
-        <p>
-            Now, only seconds later, the farmer comes along and insta-sells
-            their entire inventory of wheat. This goes to the buy order with
-            the highest offer - our other hypothetical player's offer. At
-            this point, their buy order is filled and they can collect their
-            wheat from the bazaar.
-        </p>
-        <p>
-            The take-away here is that a <em>instant sell</em> fulfills
-            an existing order in the long list of <em>buy orders</em>
-        </p>
-        <p>
-            If there are no sell orders in the bazaar, you won't be able
-            to insta-buy anything - it will just tell you that there's no
-            available materials. The same thing will happen if you try
-            to sell materials for which there are no buy orders. The bazaar
-            does not magically create the things you buy and sell out of
-            thin air, they are legitimately offered by other players in the game.
-        </p>
-        <h2>Where the Flippers Come in to Play</h3>
-        <p>
-            The logical question is that if most people insta-sell and
-            insta-buy, how are there any buy/sell orders at all? Wouldn't
-            they be in short supply?
-        </p>
-        <p>
-            This is the role that the flipper plays in the Skyblock economy.
-        </p>
-        <p>
-            The flipper <em>always</em> has the time to wait for the best
-            deal, because that's what they're after. The flipper is not trying
-            to upgrade their minion or sell their wheat, the flipper is trying
-            to make money.
-        </p>
-        <p>
-            So, first, a flipper creates a buy order for some item. This makes
-            it so a producer of that item - such as a farmer - is able to sell
-            their product easily. The flipper waits for a while, and once the
-            order is filled, they collect the items from the bazaar. However,
-            they do not use these items. Instead, they instantly create a
-            sell order and try to sell them all straight back to the bazaar. This
-            is what fuels other players' ability to instantly buy materials they
-            need.
-        </p>
-        <p>
-            Because it's more time consuming and difficult (the difficulty comes
-            from the competition in the market) to deal with buy and sell orders,
-            there is a reward: flippers typically are able to sell items for a higher
-            price than they bought them. This difference ("margin") can be significant,
-            especially if applied over many thousands of trades.
-        </p>
-        <p>
-            So there you have it. Instead of being a simple infinite-resources bulk
-            shop for players, the bazaar is actually a finely tuned market that
-            relies on people who produce goods, people who need goods, and people
-            who market the goods.
-        </p>
-        <p>
-            Another way to think of flippers is as the people who own shops on something
-            like a street market. Shop owners neither need the items they buy, nor
-            do they actually produce the goods they are selling, but they provide
-            an essential service nonetheless - they connect the buyer to the seller, and
-            make some margin in-between.
-        </p>
-        <h2>How to Become a Flipper</h2>
-        -->
     </div>
 </template><template id="bazaar-npc-flip-explorer">
     <div class="page bazaar-npc-flip-explorer-container">
@@ -282,8 +186,11 @@
 </template><template id="bazaar-home">
     <div class="page">
         <h1 class="text-center title-large-margin">The Bazaar</h1>
-        <a href="/bazaar/flip-explorer" nav-link="true">Flip Explorer</a>
-        <a href="/bazaar/npc-flip-explorer" nav-link="true">NPC Flip Explorer</a>
+        <p>
+            <a href="/bazaar/flip-explorer" nav-link="true">Flip Explorer</a>
+            (<a href="/bazaar/flip-tutorial" nav-link="true">tutorial</a>)
+            <a href="/bazaar/npc-flip-explorer" nav-link="true">NPC Flip Explorer</a>
+        </p>
     </div>
 </template>
     </body>
