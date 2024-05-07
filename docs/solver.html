@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Fossil Solver</title>
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+        <style>
+            :root {
+                --game-cols: 9;
+                --game-rows: 6;
+                --cell-size: 100px;
+                --value: 1;
+                --gray-bg: rgb(230, 230, 230);
+                --button-size: 50px;
+            }
+            * {
+                font-family: "Noto Sans";
+            }
+            #header {
+                max-width: 800px;
+                margin: auto;
+                text-align: center;
+                margin-bottom: 1em;
+            }
+            #board {
+                display: grid;
+                grid-template-columns: repeat(var(--game-cols), 1fr);
+                grid-template-rows: repeat(var(--game-rows), 1fr);
+                width: calc(var(--game-cols) * var(--cell-size));
+                height: calc(var(--game-rows) * var(--cell-size));
+                background: var(--gray-bg);
+                gap: 2px;
+                margin: auto;
+            }
+            .board-cell {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                user-select: none;
+                cursor: pointer;
+                background: rgba(31, 173, 38, var(--value));
+                color: black;
+                box-sizing: border-box;
+            }
+            .board-cell[best]{
+                border: solid black 2px;
+            }
+            #percent-complete-container {
+                display: flex;
+                justify-content: center;
+                margin-top: 1em;
+            }
+            #percent-complete-instructions {
+                text-align: center;
+            }
+            .percent-complete-button {
+                background: var(--gray-bg);
+                padding: 1em;
+                border-radius: .3pc;
+                margin-right: 2px;
+                width: calc(var(--button-size) * 2);
+                height: var(--button-size);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                text-align: center;
+                user-select: none;
+                cursor: pointer;
+            }
+            #percent-complete-container > [selected] {
+                background: rgb(31, 173, 38);
+            }
+        </style>
+    </head>
+    <body>
+
+        <div id="header">
+            <h1>Fossil Solver</h1>
+            <p>
+                <b>Instructions</b>: Click the cell with the highest
+                number in your game. If it had a fossil, <b>ctrl + click</b>
+                it in this solver. If not, just regular click it.
+                After you find your first fossil square, hover over it
+                in the minigame and input the percentage complete into the
+                solver. If you make a mistake, you can <b>alt + click</b>
+                a square to reset it.
+                Repeat until you are out of clicks in the minigame.
+            </p>
+
+            <button onclick="resetBoard()">Reset Board</button>
+        </div>
+
+        <div id="board"></div>
+
+        <p id="percent-complete-instructions">
+            <b>Important</b>: select the correct percentage complete to narrow down
+            the possibilities to one or two shapes!
+        </p>
+        <div id="percent-complete-container"></div>
+
+    </body>
+    <script>
+
+        /*
+
+            https://hypixel.net/threads/all-fossils-variants.5626280/
+            https://www.youtube.com/watch?v=FP6N3mLeN6U
+
+        */
+
+        addEventListener("load", async () => {
+            main();
+        });
+
+        const BOARD_SIZE = { width: 9, height: 6 }
+
+        var app = {
+            fossils: null,
+            board: null,
+            possiblePatterns: null,
+            percentCompleteButtons: null
+        }
+
+        // Returns true of patternName is on possible list
+        // of patterns based on the % complete metric
+        function percentCompleteCheck(patternName){
+            if(app.possiblePatterns === null){
+                return true;
+            }
+        }
+
+        async function main(){
+            await getFossils();
+            generateBoard();
+            mapBoard();
+            hidePercentageCompleteControls();
+        }
+
+        class Pattern {
+            constructor(pattern){
+                this.pattern = pattern;
+            }
+            get width() {
+                return this.pattern[0].length;
+            }
+            get height(){
+                return this.pattern.length;
+            }
+            get count(){
+                let sum = 0;
+                for(let row of this.pattern){
+                    for(let cell of row){
+                        sum += cell;
+                    }
+                }
+                return sum;
+            }
+        }
+
+        async function getFossils(){
+            app.fossils = {};
+            let fossilData = await (await fetch("/fossils.json")).json();
+            for(let [key, value] of Object.entries(fossilData)){
+                let patterns = [];
+                for(let pattern of value){
+                    patterns.push(new Pattern(pattern));
+                }
+                app.fossils[key] = patterns;
+            }
+        }
+
+        class BoardCell {
+            constructor(row, col, board){
+                this.row = row;
+                this.col = col;
+                this.board = board;
+                this.element = null;
+                this.isRevealed = false;
+                this.isFossil = false;
+                this.count = 0;
+                this.#createElement();
+            }
+            #createElement(){
+                this.element = document.createElement("div");
+                this.element.className = "board-cell";
+                this.board.appendChild(this.element);
+                this.element.onclick = e => {
+                    if(e.altKey){
+                        this.isRevealed = false;
+                        this.isFossil = false;
+                    }
+                    else {
+                        this.isRevealed = true;
+                        this.isFossil = e.ctrlKey;
+                        generatePercentageCompleteButtons();
+                    }
+                    mapBoard();
+                }
+            }
+            setText(text){
+                this.element.innerHTML = text ?? "";
+            }
+            setValue(value){
+                this.element.style.setProperty("--value", value);
+            }
+        }
+
+        function generateBoard(){
+            let boardElement = document.getElementById("board");
+            app.board = [];
+            for(let row = 0; row < BOARD_SIZE.height; row++){
+                for(let col = 0; col < BOARD_SIZE.width; col++){
+                    let cell = new BoardCell(row, col, boardElement);
+                    let rvalue = Math.random();
+                    app.board.push(cell);
+                }
+            }
+        }
+
+        /*
+
+            Take pattern, place in top right corner. "Stamp"
+            it onto the counts of those cells, then translate
+            one column right. Continue until pattern can
+            no longer fit. Then move it down one row. Repeat.
+
+
+        */
+        function mapBoard(){
+            let markedFossilsSoFar = 0;
+            for(let cell of app.board){
+                cell.count = 0;
+                if(cell.isFossil){
+                    markedFossilsSoFar++;
+                }
+            }
+            for(let [patternName, patterns] of Object.entries(app.fossils)){
+                if(app.possiblePatterns == null || app.possiblePatterns.indexOf(patternName) != -1){
+                    for(let pattern of patterns){
+                        mapPattern(pattern);
+                    }
+                }
+            }
+            let max = app.board[0].count;
+            let min = app.board[0].count;
+            for(let cell of app.board){
+                if(cell.count > max){
+                    max = cell.count;
+                }
+                if(cell.count < min){
+                    min = cell.count;
+                }
+            }
+            for(let cell of app.board){
+                cell.element.removeAttribute("best");
+                if(cell.isFossil){
+                    cell.setValue(1);
+                    cell.setText("Fossil");
+                }
+                else {
+                    cell.setValue(cell.count / (max - min));
+                    if(cell.isRevealed){
+                        cell.setText("No Fossil");
+                    }
+                    else{
+                        cell.setText(cell.count);
+                    }
+                    if(cell.count == max && cell.count != 0){
+                        cell.element.setAttribute("best", "true");
+                    }
+                }
+            }
+        }
+
+        function mapPattern(pattern){
+            for(let row = 0; row <= BOARD_SIZE.height - pattern.height; row++){
+                for(let col = 0; col <= BOARD_SIZE.width - pattern.width; col++){
+                    if(isPossible(pattern, col, row)){
+                        stampPattern(pattern, col, row);
+                    }
+                }
+            }
+        }
+
+        function isPossible(pattern, x, y){
+            // first, check outside the bounding box and
+            // see if any of those have been marked as a fossil
+            // spot if so, return false
+            if(anyOutsideBoundingBox(pattern, x, y)){
+                return false;
+            }
+            for(let row = 0; row < pattern.height; row++){
+                for(let col = 0; col < pattern.width; col++){
+                    let cell = app.board[((y + row) * BOARD_SIZE.width) + x + col];
+                    let isHit = pattern.pattern[row][col];
+                    // This pattern is not possible if the pattern requires
+                    // this cell, but the cell is revealed and is NOT a
+                    // fossil
+                    if(isHit && (cell.isRevealed && !cell.isFossil)){
+                        return false;
+                    }
+                    // the pattern is also not possible if the pattern
+                    // does NOT require this cell, but it is marked as
+                    // a fossil
+                    if(!isHit && (cell.isRevealed && cell.isFossil)){
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
+
+        function anyOutsideBoundingBox(pattern, x, y){
+            for(let row = 0; row < BOARD_SIZE.height; row++){
+                for(let col = 0; col < BOARD_SIZE.width; col++){
+                    let withinBBX = col >= x && col < x + pattern.width;
+                    let withinBBY = row >= y && row < y + pattern.height;
+                    if(withinBBX && withinBBY){
+                        // We are within the boundong box of the fossil,
+                        // let the other function do the test for this cell
+                        continue;
+                    }
+                    else {
+                        if(app.board[(row * BOARD_SIZE.width) + col].isFossil){
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false;
+        }
+
+        function stampPattern(pattern, x, y){
+            for(let row = 0; row < pattern.height; row++){
+                for(let col = 0; col < pattern.width; col++){
+                    let isHit = pattern.pattern[row][col];
+                    if(isHit){
+                        let cell = app.board[((y + row) * BOARD_SIZE.width) + x + col];
+                        cell.count++;
+                    }
+                }
+            }
+        }
+
+        function countMarkedFossils(){
+            let count = 0;
+            for(let cell of app.board){
+                if(cell.isFossil){
+                    count++;
+                }
+            }
+            return count;
+        }
+
+        function generatePercentageCompletes(uncoveredCount){
+            uncoveredCount = uncoveredCount??0;
+            let percentageCompletes = {};
+            for(let [patternName, patterns] of Object.entries(app.fossils)){
+                let pattern = patterns[0];
+                let percentage = (uncoveredCount / pattern.count * 100).toFixed(1);
+                if(percentageCompletes[percentage]){
+                    percentageCompletes[percentage].push(patternName);
+                }
+                else {
+                    percentageCompletes[percentage] = [patternName];
+                }
+            }
+            return percentageCompletes;
+        }
+
+        function resetBoard(){
+            for(let cell of app.board){
+                cell.count = 0;
+                cell.isFossil = false;
+                cell.isRevealed = false;
+            }
+            app.possiblePatterns = null;
+            hidePercentageCompleteControls();
+            mapBoard();
+        }
+
+        function hidePercentageCompleteControls(){
+            document.getElementById("percent-complete-instructions").style.display = "none";
+            document.getElementById("percent-complete-container").style.display = "none";
+        }
+
+        function showPercentageCompleteControls(){
+            document.getElementById("percent-complete-instructions").style.display = "block";
+            document.getElementById("percent-complete-container").style.display = "flex";
+        }
+
+        function generatePercentageCompleteButtons(){
+            app.percentCompleteButtons = [];
+            let container = document.getElementById("percent-complete-container");
+            container.innerHTML = "";
+            let markedFossilCount = countMarkedFossils();
+            if(markedFossilCount == 0){
+                hidePercentageCompleteControls();
+                return;
+            }
+            showPercentageCompleteControls();
+            let percentageData = generatePercentageCompletes(markedFossilCount);
+            for(let [percentageString, patternNames] of Object.entries(percentageData)){
+                let element = document.createElement("div");
+                element.className = "percent-complete-button";
+                element.innerHTML = `${percentageString}<br>${patternNames.join(', ')}`;
+                let isAlreadySelected = false;
+                if(app.possiblePatterns != null){
+                    for(let name of patternNames){
+                        if(app.possiblePatterns.indexOf(name) != -1){
+                            isAlreadySelected = true;
+                            break;
+                        }
+                    }
+                }
+                if(isAlreadySelected){
+                    element.setAttribute("selected", "true");
+                }
+                element.onclick = e => {
+                    if(element.hasAttribute("selected")){
+                        element.removeAttribute("selected");
+                        app.possiblePatterns = null;
+                    }
+                    else{
+                        clearPercentageSelection();
+                        element.setAttribute("selected", "true");
+                        app.possiblePatterns = patternNames;
+                    }
+                    mapBoard();
+                }
+                container.appendChild(element);
+            }
+        }
+
+        function clearPercentageSelection(){
+            document.querySelectorAll("#percent-complete-container > [selected]").forEach(el => {
+                el.removeAttribute("selected");
+            });
+        }
+
+    </script>
+</html>
