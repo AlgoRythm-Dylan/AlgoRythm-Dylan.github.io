@@ -245,7 +245,7 @@
             let max = app.board[0].count;
             let min = app.board[0].count;
             for(let cell of app.board){
-                if(cell.count > max){
+                if(cell.count > max && !cell.isFossil){
                     max = cell.count;
                 }
                 if(cell.count < min){
